@@ -40,7 +40,8 @@ export const HeartParticleBurst: React.FC<HeartParticleBurstProps> = ({ variant 
   }, [animValues]);
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFillObject, { pointerEvents: 'none' }]}>
+
       {PARTICLES.map((particle, index) => {
         const anim = animValues[index];
         const rad = (particle.angle * Math.PI) / 180;

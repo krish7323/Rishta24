@@ -225,18 +225,20 @@ export class InterestController {
         status: 'PENDING',
       }).sort({ createdAt: -1 });
 
-      const senderIds = interests.map((i) => i.sender);
+      const senderIds = interests.map((i) => i.sender).filter(Boolean);
       const profiles = await Profile.find({ user: { $in: senderIds } });
 
-      const profileMap = new Map(profiles.map((p) => [p.user.toString(), p]));
+      const profileMap = new Map(profiles.map((p) => [p.user ? p.user.toString() : '', p]));
 
-      const result = interests.map((item) => ({
-        _id: item._id,
-        status: item.status,
-        message: item.message,
-        createdAt: item.createdAt,
-        senderProfile: profileMap.get(item.sender.toString()),
-      }));
+      const result = interests
+        .filter((item) => item && item.sender)
+        .map((item) => ({
+          _id: item._id,
+          status: item.status,
+          message: item.message,
+          createdAt: item.createdAt,
+          senderProfile: profileMap.get(item.sender.toString()),
+        }));
 
       sendSuccess(res, result, 'Received interests fetched');
     } catch (err: any) {
@@ -254,18 +256,20 @@ export class InterestController {
         sender: new Types.ObjectId(userId),
       }).sort({ createdAt: -1 });
 
-      const receiverIds = interests.map((i) => i.receiver);
+      const receiverIds = interests.map((i) => i.receiver).filter(Boolean);
       const profiles = await Profile.find({ user: { $in: receiverIds } });
 
-      const profileMap = new Map(profiles.map((p) => [p.user.toString(), p]));
+      const profileMap = new Map(profiles.map((p) => [p.user ? p.user.toString() : '', p]));
 
-      const result = interests.map((item) => ({
-        _id: item._id,
-        status: item.status,
-        message: item.message,
-        createdAt: item.createdAt,
-        receiverProfile: profileMap.get(item.receiver.toString()),
-      }));
+      const result = interests
+        .filter((item) => item && item.receiver)
+        .map((item) => ({
+          _id: item._id,
+          status: item.status,
+          message: item.message,
+          createdAt: item.createdAt,
+          receiverProfile: profileMap.get(item.receiver.toString()),
+        }));
 
       sendSuccess(res, result, 'Sent interests fetched');
     } catch (err: any) {
@@ -273,3 +277,4 @@ export class InterestController {
     }
   }
 }
+

@@ -172,14 +172,15 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
           <Image source={{ uri: avatarUrl }} style={styles.cardImage} />
 
           {/* LIKE Badge Overlay */}
-          <Animated.View style={[styles.badgeOverlay, styles.likeBadge, { opacity: likeOpacity }]}>
+          <Animated.View style={[styles.badgeOverlay, styles.likeBadge, { opacity: likeOpacity, pointerEvents: 'none' }]}>
             <Text style={styles.likeBadgeText}>LIKE 💕</Text>
           </Animated.View>
 
           {/* PASS Badge Overlay */}
-          <Animated.View style={[styles.badgeOverlay, styles.passBadge, { opacity: passOpacity }]}>
+          <Animated.View style={[styles.badgeOverlay, styles.passBadge, { opacity: passOpacity, pointerEvents: 'none' }]}>
             <Text style={styles.passBadgeText}>PASS ✕</Text>
           </Animated.View>
+
 
           {/* Compatibility Score Tag */}
           <View style={styles.topScoreTag}>

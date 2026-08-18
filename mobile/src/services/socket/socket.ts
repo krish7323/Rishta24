@@ -14,9 +14,10 @@ class SocketService {
 
     this.socket = io(SOCKET_URL, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       autoConnect: true,
     });
+
 
     this.socket.on('connect', () => {
       console.log('✅ Connected to Rishta24 Socket Server');

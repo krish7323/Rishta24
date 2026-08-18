@@ -56,20 +56,23 @@ export class ShortlistController {
       const userId = req.user!.userId;
       const shortlists = await Shortlist.find({ user: new Types.ObjectId(userId) }).sort({ createdAt: -1 });
 
-      const targetIds = shortlists.map((s) => s.targetUser);
+      const targetIds = shortlists.map((s) => s.targetUser).filter(Boolean);
       const profiles = await Profile.find({ user: { $in: targetIds } });
-      const profileMap = new Map(profiles.map((p) => [p.user.toString(), p]));
+      const profileMap = new Map(profiles.map((p) => [p.user ? p.user.toString() : '', p]));
 
-      const result = shortlists.map((item) => ({
-        shortlistId: item._id,
-        shortlistedAt: item.createdAt,
-        notes: item.notes,
-        profile: profileMap.get(item.targetUser.toString()),
-      }));
+      const result = shortlists
+        .filter((item) => item && item.targetUser)
+        .map((item) => ({
+          shortlistId: item._id,
+          shortlistedAt: item.createdAt,
+          notes: item.notes,
+          profile: profileMap.get(item.targetUser.toString()),
+        }));
 
       sendSuccess(res, result, 'Shortlisted profiles fetched');
     } catch (err: any) {
       sendError(res, err.message, 500);
     }
   }
+
 }
