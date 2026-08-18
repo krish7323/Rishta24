@@ -5,6 +5,8 @@ import { Profile } from '../models/Profile';
 import { sendSuccess, sendError } from '../utils/response';
 import { Types } from 'mongoose';
 
+import { RecommendationService } from '../services/recommendationService';
+
 export class MatchController {
   /**
    * Get Mutual Matches for authenticated user
@@ -40,4 +42,41 @@ export class MatchController {
       sendError(res, err.message, 500);
     }
   }
+
+  /**
+   * Get Curated Daily Matches
+   */
+  static async getDailyMatches(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const userProfile = await Profile.findOne({ user: userId });
+      if (!userProfile) {
+        sendError(res, 'Profile not found', 44);
+        return;
+      }
+      const dailyMatches = await RecommendationService.getDailyMatches(userProfile);
+      sendSuccess(res, dailyMatches, 'Daily matches fetched');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
+
+  /**
+   * Get Categorized Recommendations
+   */
+  static async getCategories(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const userProfile = await Profile.findOne({ user: userId });
+      if (!userProfile) {
+        sendError(res, 'Profile not found', 404);
+        return;
+      }
+      const categories = await RecommendationService.getCategorizedRecommendations(userProfile);
+      sendSuccess(res, categories, 'Categories fetched');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
 }
+

@@ -202,6 +202,13 @@ export const ChatScreen: React.FC<{ route: any; navigation: any }> = ({
           </TouchableOpacity>
         </View>
 
+        {/* Anti-Scam Notice Banner */}
+        <View style={styles.scamNoticeBanner}>
+          <Text style={styles.scamNoticeText}>
+            🔒 <Text style={{ fontWeight: '800' }}>Rishta24 Safety Notice:</Text> Never transfer money, UPI payments, or financial passwords to anyone met online.
+          </Text>
+        </View>
+
         {/* Message Feed */}
         <FlatList
           ref={flatListRef}
@@ -209,11 +216,32 @@ export const ChatScreen: React.FC<{ route: any; navigation: any }> = ({
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.messagesList}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyChatBox}>
+              <Text style={{ fontSize: 32, marginBottom: spacing.xs }}>💬</Text>
+              <Text style={[typography.h3, { color: colors.textPrimary }]}>Start Your Conversation</Text>
+              <Text style={[typography.caption, { color: colors.textSecondary, textAlign: 'center', marginTop: 2, marginBottom: spacing.md }]}>
+                Tap a suggested starter below to send your first message:
+              </Text>
+              <View style={styles.startersWrap}>
+                {[
+                  'Hi! Nice to connect with you on Rishta24.',
+                  'What is your favourite pastime or weekend hobby?',
+                  'Tell me a little about your work & aspirations.',
+                ].map((st, i) => (
+                  <TouchableOpacity key={i} style={styles.starterChip} onPress={() => handleSend(st)}>
+                    <Text style={styles.starterChipText}>{st}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
           renderItem={({ item }) => {
             const isMine = item.sender === myUserId || item.sender?._id === myUserId;
             return <MessageBubble message={item} isMyMessage={isMine} />;
           }}
         />
+
 
         {isPartnerTyping && (
           <View style={styles.typingIndicatorContainer}>
@@ -266,6 +294,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  scamNoticeBanner: {
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gold,
+  },
+  scamNoticeText: {
+    color: '#7A5B1E',
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  emptyChatBox: {
+    alignItems: 'center',
+    padding: spacing.xl,
+    marginTop: spacing.xl,
+  },
+  startersWrap: {
+    gap: spacing.sm,
+    width: '100%',
+  },
+  starterChip: {
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.primaryLight,
+    alignItems: 'center',
+  },
+  starterChipText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 13,
+  },
   messagesList: {
     paddingVertical: spacing.md,
   },
@@ -274,3 +337,4 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
 });
+

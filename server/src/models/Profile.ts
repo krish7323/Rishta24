@@ -114,10 +114,20 @@ export interface IProfile extends Document {
   // Verification & Metrics
   verificationStatus: VerificationStatus;
   verificationBadge: boolean;
+  phoneVerified: boolean;
+  emailVerified: boolean;
+  photoVerified: boolean;
+  identityVerified: boolean;
+  photoAccessRequests: {
+    requesterId: Types.ObjectId;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    requestedAt: Date;
+  }[];
   profileCompletion: number; // 0 - 100 %
   isPremium: boolean;
   premiumPlanId?: string;
   premiumExpiresAt?: Date;
+
   isBoosted: boolean;
   boostedUntil?: Date;
   viewCount: number;
@@ -266,10 +276,22 @@ const ProfileSchema = new Schema<IProfile>(
       index: true,
     },
     verificationBadge: { type: Boolean, default: false, index: true },
+    phoneVerified: { type: Boolean, default: false },
+    emailVerified: { type: Boolean, default: false },
+    photoVerified: { type: Boolean, default: false },
+    identityVerified: { type: Boolean, default: false },
+    photoAccessRequests: [
+      {
+        requesterId: { type: Schema.Types.ObjectId, ref: 'User' },
+        status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
+        requestedAt: { type: Date, default: Date.now },
+      },
+    ],
     profileCompletion: { type: Number, default: 20 },
     isPremium: { type: Boolean, default: false, index: true },
     premiumPlanId: String,
     premiumExpiresAt: Date,
+
     isBoosted: { type: Boolean, default: false },
     boostedUntil: Date,
     viewCount: { type: Number, default: 0 },

@@ -21,5 +21,8 @@ router.post('/reset-password', authLimiter, validate(resetPasswordSchema), AuthC
 router.post('/refresh-token', AuthController.refreshToken);
 router.get('/me', authenticate, AuthController.getMe);
 router.post('/logout', authenticate, AuthController.logout);
+router.get('/sessions', authenticate, AuthController.getSessions);
+router.post('/sessions/logout-device', authenticate, AuthController.logoutDevice);
 
 export default router;
+

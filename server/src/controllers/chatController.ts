@@ -143,4 +143,22 @@ export class ChatController {
       sendError(res, err.message, 500);
     }
   }
+
+  /**
+   * Get Suggested Conversation Starters
+   */
+  static async getStarters(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const starters = [
+        'Hi! I really liked your profile. How has your week been?',
+        'What is your favourite pastime or weekend activity?',
+        'Tell me a little about your current work and career goals.',
+        'Which places do you love visiting the most when traveling?',
+      ];
+      sendSuccess(res, { starters }, 'Conversation starters fetched');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
 }
+

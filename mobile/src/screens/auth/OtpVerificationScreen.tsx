@@ -109,19 +109,27 @@ export const OtpVerificationScreen: React.FC<{ route: any; navigation: any }> = 
             autoFocus
           />
 
-          <Text style={styles.demoHint}>💡 (Demo code: 123456)</Text>
+          <TouchableOpacity
+            style={styles.autoFillBtn}
+            onPress={() => {
+              setOtp('123456');
+              setError('');
+            }}
+          >
+            <Text style={styles.autoFillText}>⚡ Auto-fill Demo OTP (123456)</Text>
+          </TouchableOpacity>
 
           <Button
-            title="Verify & Continue →"
+            title="Verify & Continue ✓"
             onPress={handleVerify}
             loading={loading}
             size="large"
-            style={{ marginTop: spacing.lg }}
+            style={{ marginTop: spacing.md }}
           />
 
           <View style={styles.resendRow}>
             {timer > 0 ? (
-              <Text style={typography.caption}>Resend code in {timer}s</Text>
+              <Text style={typography.caption}>Resend OTP code in {timer}s</Text>
             ) : (
               <TouchableOpacity onPress={handleResend}>
                 <Text style={[typography.caption, { color: colors.primary, fontWeight: '700' }]}>
@@ -131,6 +139,7 @@ export const OtpVerificationScreen: React.FC<{ route: any; navigation: any }> = 
             )}
           </View>
         </View>
+
       </View>
     </SafeAreaView>
   );
@@ -193,14 +202,23 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     color: colors.primary,
   },
-  demoHint: {
-    color: colors.textMuted,
+  autoFillBtn: {
+    backgroundColor: colors.primaryLight,
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.full,
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  autoFillText: {
+    color: colors.primary,
+    fontWeight: '700',
     fontSize: 12,
-    textAlign: 'center',
-    marginTop: spacing.xs,
   },
   resendRow: {
     alignItems: 'center',
     marginTop: spacing.xl,
   },
 });
+

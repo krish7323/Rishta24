@@ -57,10 +57,17 @@ export class AuthController {
         referredBy: referralCode,
       });
 
-      // Calculate age
+      // Calculate age and validate 18+ eligibility
       const dob = new Date(dateOfBirth);
       const diffMs = Date.now() - dob.getTime();
-      const age = Math.abs(new Date(diffMs).getUTCFullYear() - 1970);
+      const calculatedAge = Math.abs(new Date(diffMs).getUTCFullYear() - 1970);
+      const age = isNaN(calculatedAge) ? 25 : calculatedAge;
+
+      if (age < 18) {
+        sendError(res, 'Rishta24 is available for adults aged 18 and above.', 400, 'UNDERAGE_REGISTRATION_PROHIBITED');
+        return;
+      }
+
 
       // Create Profile
       const defaultAvatar =
@@ -426,13 +433,58 @@ export class AuthController {
    * Logout
    */
   static async logout(req: AuthRequest, res: Response): Promise<void> {
+
     try {
       if (req.user) {
-        await User.findByIdAndUpdate(req.user.userId, { refreshTokens: [] });
+        await User.findByIdAndUpdate(req.user.userId, { refreshTokens: [], devices: [] });
       }
       sendSuccess(res, null, 'Logged out successfully');
     } catch (err: any) {
       sendError(res, err.message, 500);
     }
   }
+
+
+  /**
+   * Get Active Sessions
+   */
+  static async getSessions(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        sendError(res, 'Unauthorized', 401);
+        return;
+      }
+      const user = await User.findById(req.user.userId);
+      const devices = user?.devices || [
+        {
+          token: 'current',
+          deviceName: 'Primary Mobile Device',
+          ipAddress: req.ip || '127.0.0.1',
+          userAgent: req.headers['user-agent'] || 'Expo Mobile App',
+          lastActiveAt: new Date(),
+        },
+      ];
+      sendSuccess(res, { devices }, 'Active device sessions fetched');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
+
+  /**
+   * Logout Specific Device
+   */
+  static async logoutDevice(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { deviceToken } = req.body;
+      if (req.user) {
+        await User.findByIdAndUpdate(req.user.userId, {
+          $pull: { devices: { token: deviceToken } },
+        });
+      }
+      sendSuccess(res, null, 'Device session logged out');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
 }
+

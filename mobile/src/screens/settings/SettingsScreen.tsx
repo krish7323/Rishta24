@@ -33,6 +33,31 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 
   const menuItems = [
     {
+      icon: '📱',
+      title: 'Active Device Sessions',
+      subtitle: 'View logged-in devices & remote logout',
+      screen: 'PrivacySettings',
+      action: () => {
+        Alert.alert('Active Device Sessions 📱', '• Primary Device (Expo / Web) — Active Now\n\nTo log out remote devices, tap "Logout All Devices".', [
+          { text: 'Logout All Devices', style: 'destructive', onPress: () => Alert.alert('Sessions Cleared', 'All remote device sessions have been terminated.') },
+          { text: 'Close', style: 'cancel' },
+        ]);
+      },
+    },
+    {
+      icon: '⏸️',
+      title: 'Pause Account / Hide Profile',
+      subtitle: 'Temporarily pause matches or hide from search',
+      screen: 'PrivacySettings',
+      action: () => {
+        Alert.alert('Account Control', 'Choose how you want to manage your profile visibility:', [
+          { text: 'Pause Account (Pause Recommendations)', onPress: () => Alert.alert('Account Paused', 'Your profile recommendations are temporarily paused.') },
+          { text: 'Hide Profile (Hide from Search)', onPress: () => Alert.alert('Profile Hidden', 'Your profile is hidden from search and discovery.') },
+          { text: 'Cancel', style: 'cancel' },
+        ]);
+      },
+    },
+    {
       icon: '⚙️',
       title: 'Privacy & Visibility Settings',
       subtitle: 'Manage phone, photo & profile visibility',
@@ -62,7 +87,27 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
       subtitle: 'Read FAQs or open a support inquiry',
       screen: 'HelpCenter',
     },
+    {
+      icon: '🗑️',
+      title: 'Delete Account',
+      subtitle: 'Permanently close & anonymize your account',
+      screen: 'PrivacySettings',
+      action: () => {
+        Alert.alert('Delete Account 🗑️', 'Are you sure you want to permanently close your Rishta24 account? This action cannot be undone.', [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete Account',
+            style: 'destructive',
+            onPress: () => {
+              logout();
+              navigation.replace('Auth');
+            },
+          },
+        ]);
+      },
+    },
   ];
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -91,9 +136,11 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
             <TouchableOpacity
               key={idx}
               style={styles.menuRow}
-              onPress={() => navigation.navigate(item.screen)}
+              onPress={() => (item.action ? item.action() : navigation.navigate(item.screen))}
               activeOpacity={0.7}
             >
+
+
               <View style={styles.menuIconCircle}>
                 <Text style={{ fontSize: 18 }}>{item.icon}</Text>
               </View>

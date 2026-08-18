@@ -125,10 +125,34 @@ export const ProfileWizardScreen: React.FC<{ navigation: any }> = ({ navigation 
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        {/* Profile Quality Banner */}
+        <View style={styles.qualityCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.caption, { color: colors.goldDark, fontWeight: '800' }]}>
+              PROFILE QUALITY SCORE
+            </Text>
+            <Text style={[typography.h3, { color: colors.textPrimary, marginTop: 2 }]}>
+              {progressPercentage >= 80 ? '🌟 Excellent Profile' : '✨ Good Start (Completing details boosts matches)'}
+            </Text>
+          </View>
+          <View style={styles.qualityBadge}>
+            <Text style={styles.qualityBadgeText}>{progressPercentage}% Complete</Text>
+          </View>
+        </View>
+
         <View style={styles.titleSection}>
-          <Text style={[typography.h2, styles.stepTitle]}>
-            {steps[currentStep - 1].title}
-          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={[typography.h2, styles.stepTitle]}>
+              {steps[currentStep - 1].title}
+            </Text>
+            {currentStep > 1 && (
+              <TouchableOpacity onPress={() => setCurrentStep((prev) => Math.min(steps.length, prev + 1))}>
+                <Text style={[typography.caption, { color: colors.primary, fontWeight: '700' }]}>
+                  Complete Later →
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={[typography.bodySecondary, styles.stepSubtitle]}>
             {steps[currentStep - 1].subtitle}
           </Text>
@@ -384,6 +408,28 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: spacing.xl,
   },
+  qualityCard: {
+    backgroundColor: '#FFFBEB',
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+    marginBottom: spacing.md,
+  },
+  qualityBadge: {
+    backgroundColor: colors.goldDark,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs + 2,
+    borderRadius: radius.full,
+    marginLeft: spacing.sm,
+  },
+  qualityBadgeText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 11,
+  },
   titleSection: {
     marginVertical: spacing.md,
   },
@@ -401,3 +447,4 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
 });
+

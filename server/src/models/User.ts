@@ -2,6 +2,14 @@ import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { USER_ROLES, ACCOUNT_STATUS, UserRole, AccountStatus } from '../config/constants';
 
+export interface IDeviceSession {
+  token: string;
+  deviceName: string;
+  ipAddress: string;
+  userAgent: string;
+  lastActiveAt: Date;
+}
+
 export interface IUser extends Document {
   email: string;
   phone: string;
@@ -10,6 +18,8 @@ export interface IUser extends Document {
   status: AccountStatus;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
+  isPaused: boolean;
+  isHidden: boolean;
   otp?: {
     code: string;
     expiresAt: Date;
@@ -17,6 +27,7 @@ export interface IUser extends Document {
     attempts: number;
   };
   refreshTokens: string[];
+  devices: IDeviceSession[];
   lastLoginAt?: Date;
   loginAttempts: number;
   lockUntil?: Date;
@@ -68,6 +79,14 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    isPaused: {
+      type: Boolean,
+      default: false,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
     otp: {
       code: String,
       expiresAt: Date,
@@ -75,6 +94,15 @@ const UserSchema = new Schema<IUser>(
       attempts: { type: Number, default: 0 },
     },
     refreshTokens: [{ type: String }],
+    devices: [
+      {
+        token: String,
+        deviceName: { type: String, default: 'Web Browser' },
+        ipAddress: { type: String, default: '127.0.0.1' },
+        userAgent: String,
+        lastActiveAt: { type: Date, default: Date.now },
+      },
+    ],
     lastLoginAt: Date,
     loginAttempts: { type: Number, default: 0 },
     lockUntil: Date,
@@ -89,6 +117,7 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+
 
 UserSchema.methods.comparePassword = async function (candidate: string): Promise<boolean> {
   return bcrypt.compare(candidate, this.passwordHash);

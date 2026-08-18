@@ -236,4 +236,107 @@ export class ProfileController {
       sendError(res, err.message, 500);
     }
   }
+
+  /**
+   * Request Access to Protected Photos
+   */
+  static async requestPhotoAccess(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const requesterId = req.user!.userId;
+      const { targetUserId } = req.body;
+
+      const targetProfile = await Profile.findOne({ user: targetUserId });
+      if (!targetProfile) {
+        sendError(res, 'Target profile not found', 404);
+        return;
+      }
+
+      const existingReq = targetProfile.photoAccessRequests.find(
+        (r) => r.requesterId.toString() === requesterId
+      );
+
+      if (existingReq) {
+        sendSuccess(res, { status: existingReq.status }, 'Access request already submitted');
+        return;
+      }
+
+      targetProfile.photoAccessRequests.push({
+        requesterId: new Types.ObjectId(requesterId),
+        status: 'PENDING',
+        requestedAt: new Date(),
+      });
+      await targetProfile.save();
+
+      sendSuccess(res, { status: 'PENDING' }, 'Photo access request sent');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
+
+  /**
+   * Approve / Deny Photo Access Request
+   */
+  static async approvePhotoAccess(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const { requesterId, approve } = req.body;
+
+      const profile = await Profile.findOne({ user: userId });
+      if (!profile) {
+        sendError(res, 'Profile not found', 404);
+        return;
+      }
+
+      const reqItem = profile.photoAccessRequests.find(
+        (r) => r.requesterId.toString() === requesterId
+      );
+      if (reqItem) {
+        reqItem.status = approve ? 'APPROVED' : 'REJECTED';
+        await profile.save();
+      }
+
+      sendSuccess(res, null, `Photo access ${approve ? 'approved' : 'rejected'}`);
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
+
+  /**
+   * Toggle Pause Account (Temporarily disable recommendations)
+   */
+  static async pauseAccount(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const user = await User.findById(userId);
+      if (!user) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+      user.isPaused = !user.isPaused;
+      await user.save();
+      sendSuccess(res, { isPaused: user.isPaused }, `Account ${user.isPaused ? 'paused' : 'resumed'}`);
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
+
+  /**
+   * Toggle Hide Profile from Discovery & Search
+   */
+  static async hideProfile(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const user = await User.findById(userId);
+      if (!user) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+      user.isHidden = !user.isHidden;
+      await user.save();
+      sendSuccess(res, { isHidden: user.isHidden }, `Profile ${user.isHidden ? 'hidden' : 'visible'}`);
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
 }
+

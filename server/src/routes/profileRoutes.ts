@@ -10,7 +10,12 @@ const router = Router();
 router.put('/me', authenticate, validate(updateProfileSchema), ProfileController.updateProfile);
 router.post('/photos', authenticate, upload.single('photo'), ProfileController.addPhoto);
 router.delete('/photos/:photoId', authenticate, ProfileController.deletePhoto);
+router.post('/request-photo-access', authenticate, ProfileController.requestPhotoAccess);
+router.post('/approve-photo-access', authenticate, ProfileController.approvePhotoAccess);
+router.post('/pause', authenticate, ProfileController.pauseAccount);
+router.post('/hide', authenticate, ProfileController.hideProfile);
 router.delete('/me', authenticate, ProfileController.deleteAccount);
 router.get('/:id', authenticate, ProfileController.getProfileById);
 
 export default router;
+

@@ -8,6 +8,8 @@ const router = Router();
 
 router.get('/conversations', authenticate, ChatController.getConversations);
 router.get('/conversations/:conversationId/messages', authenticate, ChatController.getMessages);
+router.get('/starters', authenticate, ChatController.getStarters);
 router.post('/messages', authenticate, validate(sendMessageSchema), ChatController.sendMessage);
 
 export default router;
+

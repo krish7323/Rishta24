@@ -48,6 +48,13 @@ export const RegisterScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
       return;
     }
 
+    const dob = new Date(formData.dateOfBirth);
+    const age = Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970);
+    if (isNaN(age) || age < 18) {
+      setError('Rishta24 is available for adults aged 18 and above.');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
@@ -62,6 +69,7 @@ export const RegisterScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
       setLoading(false);
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -151,6 +159,15 @@ export const RegisterScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
             onChangeText={(val) => setFormData({ ...formData, password: val })}
             isPassword
           />
+
+          <Input
+            label="Date of Birth (YYYY-MM-DD) *"
+            placeholder="e.g. 1998-05-15"
+            value={formData.dateOfBirth}
+            onChangeText={(val) => setFormData({ ...formData, dateOfBirth: val })}
+            helperText="🛡️ Rishta24 is available for adults aged 18 and above."
+          />
+
 
           <SelectDropdown
             label="Religion *"
