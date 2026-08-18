@@ -6,7 +6,10 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  Animated,
+  Platform,
 } from 'react-native';
+
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, shadows, spacing } from '../../theme/spacing';
@@ -99,28 +102,51 @@ export const Button: React.FC<ButtonProps> = ({
     return base;
   };
 
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 4,
+      tension: 40,
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
-      disabled={disabled || loading}
-      style={[getContainerStyle(), style]}
-    >
-      {loading ? (
-        <ActivityIndicator
-          color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.textLight}
-          size="small"
-        />
-      ) : (
-        <>
-          {icon && iconPosition === 'left' && <>{icon}</>}
-          <Text style={[getTextStyle(), textStyle]}>{title}</Text>
-          {icon && iconPosition === 'right' && <>{icon}</>}
-        </>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, fullWidth && { width: '100%' }]}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+        style={[getContainerStyle(), style]}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.textLight}
+            size="small"
+          />
+        ) : (
+          <>
+            {icon && iconPosition === 'left' && <>{icon}</>}
+            <Text style={[getTextStyle(), textStyle]}>{title}</Text>
+            {icon && iconPosition === 'right' && <>{icon}</>}
+          </>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
+
 
 const styles = StyleSheet.create({
   base: {

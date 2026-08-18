@@ -272,6 +272,21 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             — Neha & Siddharth (Married Nov 2025)
           </Text>
         </View>
+
+        {/* Dev Mode 3D Match Simulation Button */}
+        <TouchableOpacity
+          style={styles.simMatchBtn}
+          onPress={() => {
+            setMatchedProfile({
+              firstName: 'Ananya',
+              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+            });
+            setMatchModalVisible(true);
+          }}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.simMatchText}>⚡ Test Signature 3D Match Celebration ❤️</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Match Celebration Modal */}
@@ -281,6 +296,8 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           partnerName={matchedProfile.firstName}
           partnerAvatarUrl={matchedProfile.avatar}
           myAvatarUrl={profile?.avatar}
+          compatibilityScore={96}
+          animationVariant="gold"
           onStartChat={() => {
             setMatchModalVisible(false);
             navigation.navigate('Chat', {
@@ -293,6 +310,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -499,4 +517,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primaryBorder,
   },
+  simMatchBtn: {
+    backgroundColor: colors.gold,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: radius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.goldDark,
+    ...shadows.gold,
+  },
+  simMatchText: {
+    color: '#5A3F0B',
+    fontWeight: '800',
+    fontSize: 14,
+  },
 });
+
