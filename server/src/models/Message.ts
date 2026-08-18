@@ -4,6 +4,7 @@ export interface IMessage extends Document {
   conversationId: Types.ObjectId;
   sender: Types.ObjectId;
   receiver: Types.ObjectId;
+  clientMessageId?: string;
   messageType: 'TEXT' | 'IMAGE' | 'AUDIO' | 'CONTACT_REQUEST';
   text?: string;
   mediaUrl?: string;
@@ -20,6 +21,7 @@ const MessageSchema = new Schema<IMessage>(
     conversationId: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true, index: true },
     sender: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     receiver: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    clientMessageId: { type: String, index: true, sparse: true },
     messageType: { type: String, enum: ['TEXT', 'IMAGE', 'AUDIO', 'CONTACT_REQUEST'], default: 'TEXT' },
     text: { type: String, trim: true },
     mediaUrl: String,
@@ -32,5 +34,7 @@ const MessageSchema = new Schema<IMessage>(
 );
 
 MessageSchema.index({ conversationId: 1, createdAt: -1 });
+MessageSchema.index({ clientMessageId: 1 }, { unique: true, sparse: true });
 
 export const Message = mongoose.model<IMessage>('Message', MessageSchema);
+

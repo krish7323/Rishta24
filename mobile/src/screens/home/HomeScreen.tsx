@@ -13,6 +13,7 @@ import {
 import { RishtaLogo } from '../../components/common/RishtaLogo';
 import { ProfileCard } from '../../components/cards/ProfileCard';
 import { MatchCelebrationModal } from '../../components/modals/MatchCelebrationModal';
+import { Rishta24QACenterModal } from '../../components/modals/Rishta24QACenterModal';
 import { Skeleton, ProfileCardSkeleton } from '../../components/common/SkeletonLoader';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -26,7 +27,9 @@ import { socketService } from '../../services/socket/socket';
 export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [matchModalVisible, setMatchModalVisible] = useState(false);
+  const [qaModalVisible, setQaModalVisible] = useState(false);
   const [matchedProfile, setMatchedProfile] = useState<any>(null);
+
 
   const profile = useAuthStore((state) => state.profile);
   const recommendedProfiles = useSearchStore((state) => state.recommendedProfiles);
@@ -273,21 +276,32 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </Text>
         </View>
 
-        {/* Dev Mode 3D Match Simulation Button */}
-        <TouchableOpacity
-          style={styles.simMatchBtn}
-          onPress={() => {
-            setMatchedProfile({
-              firstName: 'Ananya',
-              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-            });
-            setMatchModalVisible(true);
-          }}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.simMatchText}>⚡ Test Signature 3D Match Celebration ❤️</Text>
-        </TouchableOpacity>
+        {/* Dev Mode 3D Match & QA Simulation Buttons */}
+        <View style={{ gap: 10, marginTop: spacing.lg, marginHorizontal: spacing.lg }}>
+          <TouchableOpacity
+            style={styles.simMatchBtn}
+            onPress={() => {
+              setMatchedProfile({
+                firstName: 'Ananya',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+              });
+              setMatchModalVisible(true);
+            }}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.simMatchText}>⚡ Test Signature 3D Match Celebration ❤️</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.simMatchBtn, { backgroundColor: colors.surface, borderColor: colors.primary }]}
+            onPress={() => setQaModalVisible(true)}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.simMatchText, { color: colors.primary }]}>🧪 Open Production QA Center</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+
 
       {/* Match Celebration Modal */}
       {matchedProfile && (
@@ -307,8 +321,22 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           onClose={() => setMatchModalVisible(false)}
         />
       )}
+
+      {/* Production QA Center Modal */}
+      <Rishta24QACenterModal
+        visible={qaModalVisible}
+        onClose={() => setQaModalVisible(false)}
+        onTriggerMatch={() => {
+          setMatchedProfile({
+            firstName: 'Ananya',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+          });
+          setMatchModalVisible(true);
+        }}
+      />
     </SafeAreaView>
   );
+
 };
 
 

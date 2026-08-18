@@ -10,6 +10,7 @@ import { ENV } from './config/env';
 import { connectDatabase } from './config/database';
 import { logger } from './utils/logger';
 import { generalLimiter } from './middlewares/rateLimiter';
+import { idempotencyMiddleware } from './middlewares/idempotency';
 import { errorHandler } from './middlewares/errorHandler';
 import apiRoutes from './routes';
 import { setupChatSocket } from './socket/chatSocket';
@@ -35,8 +36,10 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(idempotencyMiddleware);
 app.use(morgan('dev'));
 app.use('/api', generalLimiter);
+
 
 // Serve uploaded media statically
 const uploadsPath = path.resolve(ENV.UPLOAD_PATH);
