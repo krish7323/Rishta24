@@ -43,11 +43,26 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 6 || Math.abs(gestureState.dy) > 6;
+      },
+      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 6 || Math.abs(gestureState.dy) > 6;
+      },
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: (pan.x as any)._value || 0,
+          y: (pan.y as any)._value || 0,
+        });
+        pan.setValue({ x: 0, y: 0 });
+      },
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gestureState) => {
+        pan.flattenOffset();
         if (gestureState.dx > SWIPE_THRESHOLD) {
           forceSwipe('right');
         } else if (gestureState.dx < -SWIPE_THRESHOLD) {
@@ -56,11 +71,16 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
           resetPosition();
         }
       },
+      onPanResponderTerminate: () => {
+        pan.flattenOffset();
+        resetPosition();
+      },
     })
   ).current;
 
   const forceSwipe = (direction: 'right' | 'left') => {
-    const x = direction === 'right' ? SCREEN_WIDTH * 1.2 : -SCREEN_WIDTH * 1.2;
+    pan.flattenOffset();
+    const x = direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;
     Animated.timing(pan, {
       toValue: { x, y: 0 },
       duration: 250,
@@ -85,12 +105,15 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
   };
 
   const resetPosition = () => {
+    pan.flattenOffset();
     Animated.spring(pan, {
       toValue: { x: 0, y: 0 },
       friction: 5,
+      tension: 40,
       useNativeDriver: false,
     }).start();
   };
+
 
   if (!currentProfile || currentIndex >= profiles.length) {
     return (
