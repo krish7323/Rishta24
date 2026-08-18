@@ -1,0 +1,27 @@
+import { z } from 'zod';
+
+export const searchProfilesSchema = z.object({
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
+  minAge: z.coerce.number().min(18).max(80).optional(),
+  maxAge: z.coerce.number().min(18).max(80).optional(),
+  minHeight: z.coerce.number().optional(),
+  maxHeight: z.coerce.number().optional(),
+  religion: z.string().optional(),
+  community: z.string().optional(),
+  caste: z.string().optional(),
+  motherTongue: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  maritalStatus: z.string().optional(),
+  educationLevel: z.string().optional(),
+  occupation: z.string().optional(),
+  diet: z.string().optional(),
+  minIncome: z.coerce.number().optional(),
+  hasPhotoOnly: z.coerce.boolean().optional(),
+  isVerifiedOnly: z.coerce.boolean().optional(),
+  isPremiumOnly: z.coerce.boolean().optional(),
+  sortBy: z.enum(['compatibility', 'recent', 'activity', 'age_asc', 'age_desc']).default('compatibility'),
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(50).default(20),
+});

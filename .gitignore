@@ -1,0 +1,38 @@
+# Node modules
+**/node_modules/
+node_modules/
+
+# Environment & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.local
+
+# Build outputs
+**/dist/
+**/build/
+**/out/
+.expo/
+.expo-shared/
+web-build/
+
+# Logs & temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.sys.log
+
+# Uploads & Media
+**/uploads/*
+!**/uploads/.gitkeep
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
