@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -18,18 +19,28 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
+    const executeLogout = () => {
+      logout();
+      navigation.replace('Auth');
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to log out of Rishta24?')) {
+        executeLogout();
+      }
+      return;
+    }
+
     Alert.alert('Log Out', 'Are you sure you want to log out of Rishta24?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Log Out',
         style: 'destructive',
-        onPress: () => {
-          logout();
-          navigation.replace('Auth');
-        },
+        onPress: executeLogout,
       },
     ]);
   };
+
 
   const menuItems = [
     {

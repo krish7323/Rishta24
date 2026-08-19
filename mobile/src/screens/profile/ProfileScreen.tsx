@@ -7,7 +7,9 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
+
 import { Avatar } from '../../components/common/Avatar';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { VerifiedBadge, PremiumCrownBadge } from '../../components/common/Badge';
@@ -24,18 +26,28 @@ export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
   const completion = profile?.profileCompletion || 75;
 
   const handleLogout = () => {
+    const executeLogout = () => {
+      logout();
+      navigation.replace('Auth');
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to log out of Rishta24?')) {
+        executeLogout();
+      }
+      return;
+    }
+
     Alert.alert('Log Out', 'Are you sure you want to log out of Rishta24?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Log Out',
         style: 'destructive',
-        onPress: () => {
-          logout();
-          navigation.replace('Auth');
-        },
+        onPress: executeLogout,
       },
     ]);
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
