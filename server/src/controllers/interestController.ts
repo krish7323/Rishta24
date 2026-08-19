@@ -51,14 +51,15 @@ export class InterestController {
 
       if (existing) {
         if (existing.status === 'PENDING') {
-          sendError(res, 'Interest already sent and is pending approval', 400, 'ALREADY_SENT');
+          sendSuccess(res, { interest: existing, alreadySent: true }, 'Interest request is already pending review');
           return;
         }
         if (existing.status === 'ACCEPTED') {
-          sendError(res, 'You are already matched with this profile', 400, 'ALREADY_MATCHED');
+          sendSuccess(res, { interest: existing, isMutualMatch: true }, 'You are already matched with this profile');
           return;
         }
       }
+
 
       // Check if opposite interest already exists (Instant match!)
       const incomingInterest = await Interest.findOne({
