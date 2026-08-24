@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { appStorage } from '../../utils/storage';
 
 // Dynamic production or local API URL
-const rawServerUrl = process.env.EXPO_PUBLIC_SERVER_URL || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const rawServerUrl = process.env.EXPO_PUBLIC_SERVER_URL || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'https://rishta24-backend.onrender.com';
 export const SERVER_BASE_URL = rawServerUrl.endsWith('/') ? rawServerUrl.slice(0, -1) : rawServerUrl;
 export const API_BASE_URL = `${SERVER_BASE_URL}/api`;
 

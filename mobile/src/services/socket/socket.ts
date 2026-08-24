@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import { appStorage } from '../../utils/storage';
 
-const rawServerUrl = process.env.EXPO_PUBLIC_SERVER_URL || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const rawServerUrl = process.env.EXPO_PUBLIC_SERVER_URL || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'https://rishta24-backend.onrender.com';
 const SOCKET_URL = rawServerUrl.endsWith('/') ? rawServerUrl.slice(0, -1) : rawServerUrl;
 
 class SocketService {
