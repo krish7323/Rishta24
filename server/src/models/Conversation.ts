@@ -21,7 +21,7 @@ const ConversationSchema = new Schema<IConversation>(
     lastMessageSender: { type: Schema.Types.ObjectId, ref: 'User' },
     lastMessageAt: { type: Date, default: Date.now, index: true },
     unreadCounts: { type: Map, of: Number, default: {} },
-    isBlocked: { type: Boolean, default: false },
+    isBlocked: { type: Boolean, default: false }, 
     blockedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }

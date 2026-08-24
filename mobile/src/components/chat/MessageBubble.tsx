@@ -4,6 +4,7 @@ import { IMessage } from '../../types/models';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing } from '../../theme/spacing';
+import { getMediaUrl } from '../../services/api/client';
 
 interface MessageBubbleProps {
   message: IMessage;
@@ -30,7 +31,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMyMessa
         ]}
       >
         {message.mediaUrl && (
-          <Image source={{ uri: message.mediaUrl }} style={styles.imageAttachment} />
+          <Image source={{ uri: getMediaUrl(message.mediaUrl) }} style={styles.imageAttachment} />
         )}
 
         {message.text ? (

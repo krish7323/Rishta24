@@ -31,6 +31,7 @@ interface SearchState {
   search: (customFilters?: Partial<SearchFilters>) => Promise<void>;
   setFilter: (key: keyof SearchFilters, value: any) => void;
   resetFilters: () => void;
+  reset: () => void;
 }
 
 const initialFilters: SearchFilters = {
@@ -73,4 +74,5 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   },
 
   resetFilters: () => set({ filters: initialFilters }),
+  reset: () => set({ recommendedProfiles: [], searchResults: [], filters: initialFilters, isLoading: false, isSearching: false }),
 }));

@@ -13,12 +13,24 @@ export const profileApi = {
     return res.data;
   },
 
-  addPhoto: async (photoUrl: string): Promise<ApiResponse<IProfilePhoto[]>> => {
+  addPhoto: async (photoUrl: string): Promise<ApiResponse<{ photos: IProfilePhoto[]; avatar?: string; profile: IProfile }>> => {
     const res = await apiClient.post('/profiles/photos', { photoUrl });
     return res.data;
   },
 
-  deletePhoto: async (photoId: string): Promise<ApiResponse<IProfilePhoto[]>> => {
+  uploadPhoto: async (formData: FormData): Promise<ApiResponse<{ photos: IProfilePhoto[]; avatar?: string; profile: IProfile }>> => {
+    const res = await apiClient.post('/profiles/photos', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
+  setPrimaryPhoto: async (photoId: string): Promise<ApiResponse<{ photos: IProfilePhoto[]; avatar?: string; profile: IProfile }>> => {
+    const res = await apiClient.put(`/profiles/photos/${photoId}/primary`);
+    return res.data;
+  },
+
+  deletePhoto: async (photoId: string): Promise<ApiResponse<{ photos: IProfilePhoto[]; avatar?: string; profile: IProfile }>> => {
     const res = await apiClient.delete(`/profiles/photos/${photoId}`);
     return res.data;
   },

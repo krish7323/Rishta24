@@ -160,5 +160,47 @@ export class ChatController {
       sendError(res, err.message, 500);
     }
   }
+
+  /**
+   * Upload Chat Attachment Image / Document
+   */
+  static async uploadAttachment(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const senderId = req.user!.userId;
+      const file = req.file;
+      const { conversationId } = req.body;
+
+      if (!file) {
+        sendError(res, 'No attachment file provided', 400, 'FILE_REQUIRED');
+        return;
+      }
+
+      if (conversationId) {
+        const conv = await Conversation.findOne({
+          _id: new Types.ObjectId(conversationId),
+          participants: new Types.ObjectId(senderId),
+        });
+        if (!conv) {
+          sendError(res, 'Conversation not found or unauthorized', 403, 'FORBIDDEN');
+          return;
+        }
+      }
+
+      const mediaUrl = `/uploads/${file.filename}`;
+      sendSuccess(
+        res,
+        {
+          mediaUrl,
+          filename: file.filename,
+          mimeType: file.mimetype,
+          size: file.size,
+        },
+        'Attachment uploaded successfully',
+        201
+      );
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
 }
 

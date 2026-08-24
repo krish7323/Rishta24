@@ -70,8 +70,15 @@ export const chatApi = {
     return res.data;
   },
 
-  sendMessage: async (receiverId: string, text?: string, mediaUrl?: string): Promise<ApiResponse<{ message: IMessage; conversationId: string }>> => {
-    const res = await apiClient.post('/chats/messages', { receiverId, text, mediaUrl });
+  sendMessage: async (receiverId: string, text?: string, mediaUrl?: string, messageType: 'TEXT' | 'IMAGE' = 'TEXT'): Promise<ApiResponse<{ message: IMessage; conversationId: string }>> => {
+    const res = await apiClient.post('/chats/messages', { receiverId, text, mediaUrl, messageType });
+    return res.data;
+  },
+
+  uploadAttachment: async (formData: FormData): Promise<ApiResponse<{ mediaUrl: string; filename: string; mimeType: string; size: number }>> => {
+    const res = await apiClient.post('/chats/attachment', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data;
   },
 };

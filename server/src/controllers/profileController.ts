@@ -11,12 +11,12 @@ import { ACCOUNT_STATUS } from '../config/constants';
 
 export class ProfileController {
   /**
-   * Update authenticated user's profile
+   * Update authenticated user's profile with mass assignment protection
    */
   static async updateProfile(req: AuthRequest, res: Response): Promise<void> {
     try {
       const userId = req.user!.userId;
-      const updates = req.body;
+      const body = req.body;
 
       let profile = await Profile.findOne({ user: new Types.ObjectId(userId) });
       if (!profile) {
@@ -24,8 +24,21 @@ export class ProfileController {
         return;
       }
 
-      // Update fields
-      Object.assign(profile, updates);
+      // Explicit field whitelisting to prevent mass assignment
+      const allowedFields = [
+        'firstName', 'lastName', 'height', 'maritalStatus', 'religion', 'community', 'caste',
+        'subCaste', 'gotra', 'manglik', 'about', 'city', 'state', 'country', 'citizenship',
+        'educationLevel', 'degree', 'college', 'occupation', 'employer', 'annualIncome',
+        'incomeRange', 'familyType', 'fatherOccupation', 'motherOccupation', 'brothersCount',
+        'sistersCount', 'familyValues', 'familyLocation', 'diet', 'smoking', 'drinking',
+        'hobbies', 'interests', 'partnerPreferences', 'privacySettings', 'notificationSettings'
+      ];
+
+      allowedFields.forEach((field) => {
+        if (body[field] !== undefined) {
+          (profile as any)[field] = body[field];
+        }
+      });
 
       // Re-calculate completion percentage
       profile.profileCompletion = profile.calculateCompletion();
@@ -38,7 +51,7 @@ export class ProfileController {
   }
 
   /**
-   * Get single profile by ID with visitor tracking & compatibility calculation
+   * Get single profile by ID with visitor tracking, privacy filtering & compatibility calculation
    */
   static async getProfileById(req: AuthRequest, res: Response): Promise<void> {
     try {
@@ -92,10 +105,22 @@ export class ProfileController {
         }
       }
 
+      // Apply Privacy Filtering DTO for non-owner callers
+      const profileData = targetProfile.toObject();
+      if (callerUserId !== targetUserId) {
+        const pSettings = profileData.privacySettings || {};
+        if (pSettings.phoneVisibility === 'PRIVATE') {
+          delete (profileData.user as any)?.phone;
+        }
+        if (pSettings.emailVisibility === 'PRIVATE') {
+          delete (profileData.user as any)?.email;
+        }
+      }
+
       sendSuccess(
         res,
         {
-          profile: targetProfile,
+          profile: profileData,
           compatibility,
         },
         'Profile details fetched successfully'
@@ -113,69 +138,82 @@ export class ProfileController {
       const userId = req.user!.userId;
       const file = req.file;
 
-      if (!file) {
-        // Allow URL passed in body for testing/simulation
-        const { photoUrl } = req.body;
-        if (!photoUrl) {
-          sendError(res, 'No photo file or URL provided', 400, 'FILE_REQUIRED');
-          return;
-        }
-
-        const profile = await Profile.findOne({ user: new Types.ObjectId(userId) });
-        if (!profile) {
-          sendError(res, 'Profile not found', 404);
-          return;
-        }
-
-        profile.photos.push({
-          url: photoUrl,
-          isPrimary: profile.photos.length === 0,
-          privacy: 'PUBLIC',
-          isApproved: true,
-          uploadedAt: new Date(),
-        });
-
-        if (profile.photos.length === 1) {
-          profile.avatar = photoUrl;
-        }
-
-        profile.profileCompletion = profile.calculateCompletion();
-        await profile.save();
-
-        sendSuccess(res, profile.photos, 'Photo uploaded successfully');
-        return;
-      }
-
-      const photoUrl = `/uploads/${file.filename}`;
       const profile = await Profile.findOne({ user: new Types.ObjectId(userId) });
       if (!profile) {
         sendError(res, 'Profile not found', 404);
         return;
       }
 
+      let photoUrl = '';
+      if (file) {
+        photoUrl = `/uploads/${file.filename}`;
+      } else if (req.body.photoUrl) {
+        photoUrl = req.body.photoUrl;
+      } else {
+        sendError(res, 'No photo file or URL provided', 400, 'FILE_REQUIRED');
+        return;
+      }
+
+      const isFirst = profile.photos.length === 0;
       profile.photos.push({
         url: photoUrl,
-        isPrimary: profile.photos.length === 0,
+        isPrimary: isFirst,
         privacy: 'PUBLIC',
         isApproved: true,
         uploadedAt: new Date(),
       });
 
-      if (profile.photos.length === 1) {
+      if (isFirst || !profile.avatar) {
         profile.avatar = photoUrl;
       }
 
       profile.profileCompletion = profile.calculateCompletion();
       await profile.save();
 
-      sendSuccess(res, profile.photos, 'Photo uploaded successfully');
+      sendSuccess(res, { photos: profile.photos, avatar: profile.avatar, profile }, 'Photo uploaded successfully');
     } catch (err: any) {
       sendError(res, err.message, 500);
     }
   }
 
   /**
-   * Delete Photo
+   * Set Photo as Primary Profile Photo
+   */
+  static async setPrimaryPhoto(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const { photoId } = req.params;
+
+      const profile = await Profile.findOne({ user: new Types.ObjectId(userId) });
+      if (!profile) {
+        sendError(res, 'Profile not found', 404);
+        return;
+      }
+
+      const targetPhoto = profile.photos.find(
+        (p: any) => p._id?.toString() === photoId || p.id === photoId || p._id === photoId
+      );
+      if (!targetPhoto) {
+        sendError(res, 'Photo not found on your profile', 404, 'PHOTO_NOT_FOUND');
+        return;
+      }
+
+      profile.photos.forEach((p: any) => {
+        const matches = p._id?.toString() === photoId || p.id === photoId || p._id === photoId;
+        p.isPrimary = matches;
+      });
+
+      profile.avatar = targetPhoto.url;
+      await profile.save();
+
+      sendSuccess(res, { photos: profile.photos, avatar: profile.avatar, profile }, 'Primary profile photo updated successfully');
+    } catch (err: any) {
+      sendError(res, err.message, 500);
+    }
+  }
+
+  /**
+   * Delete Photo from Profile Gallery
    */
   static async deletePhoto(req: AuthRequest, res: Response): Promise<void> {
     try {
@@ -188,16 +226,28 @@ export class ProfileController {
         return;
       }
 
-      profile.photos = profile.photos.filter((p) => p._id?.toString() !== photoId);
+      const photoExists = profile.photos.some(
+        (p: any) => p._id?.toString() === photoId || p.id === photoId || p._id === photoId
+      );
+      if (!photoExists) {
+        sendError(res, 'Photo not found or unauthorized to delete', 404, 'PHOTO_NOT_FOUND');
+        return;
+      }
+
+      profile.photos = profile.photos.filter(
+        (p: any) => p._id?.toString() !== photoId && p.id !== photoId && p._id !== photoId
+      ) as any;
       if (profile.photos.length > 0 && !profile.photos.some((p) => p.isPrimary)) {
         profile.photos[0].isPrimary = true;
         profile.avatar = profile.photos[0].url;
+      } else if (profile.photos.length === 0) {
+        profile.avatar = '';
       }
 
       profile.profileCompletion = profile.calculateCompletion();
       await profile.save();
 
-      sendSuccess(res, profile.photos, 'Photo deleted successfully');
+      sendSuccess(res, { photos: profile.photos, avatar: profile.avatar, profile }, 'Photo deleted successfully');
     } catch (err: any) {
       sendError(res, err.message, 500);
     }

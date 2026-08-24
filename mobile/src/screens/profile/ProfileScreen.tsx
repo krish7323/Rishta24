@@ -16,14 +16,62 @@ import { VerifiedBadge, PremiumCrownBadge } from '../../components/common/Badge'
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, shadows, spacing } from '../../theme/spacing';
+import * as ImagePicker from 'expo-image-picker';
+import { profileApi } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 
 export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const user = useAuthStore((state) => state.user);
   const profile = useAuthStore((state) => state.profile);
+  const setProfile = useAuthStore((state) => state.setProfile);
   const logout = useAuthStore((state) => state.logout);
 
   const completion = profile?.profileCompletion || 75;
+
+  const handleUploadProfilePhoto = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Denied', 'Please allow media library access to upload a profile photo.');
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (pickerResult.canceled || !pickerResult.assets || pickerResult.assets.length === 0) {
+        return;
+      }
+
+      const asset = pickerResult.assets[0];
+      const uri = asset.uri;
+
+      const filename = uri.split('/').pop() || `profile_${Date.now()}.jpg`;
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      const formData = new FormData();
+      if (Platform.OS === 'web') {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        formData.append('photo', blob, filename);
+      } else {
+        formData.append('photo', { uri, name: filename, type } as any);
+      }
+
+      const res = await profileApi.uploadPhoto(formData);
+      if (res.data && res.data.profile) {
+        setProfile(res.data.profile);
+      }
+      Alert.alert('Success 🎉', 'Profile photo uploaded successfully!');
+    } catch (err: any) {
+      Alert.alert('Upload Error', 'Failed to upload photo. Please try again.');
+    }
+  };
 
   const handleLogout = () => {
     const executeLogout = () => {
@@ -48,7 +96,6 @@ export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
     ]);
   };
 
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -59,12 +106,17 @@ export const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
         {/* Top Profile Summary Card */}
         <View style={styles.profileCard}>
           <View style={styles.profileTopRow}>
-            <Avatar
-              url={profile?.avatar}
-              size={70}
-              isVerified={profile?.verificationBadge}
-              isPremium={profile?.isPremium}
-            />
+            <TouchableOpacity onPress={handleUploadProfilePhoto} activeOpacity={0.8} style={{ position: 'relative' }}>
+              <Avatar
+                url={profile?.avatar}
+                size={70}
+                isVerified={profile?.verificationBadge}
+                isPremium={profile?.isPremium}
+              />
+              <View style={styles.cameraIconBadge}>
+                <Text style={{ fontSize: 11 }}>📷</Text>
+              </View>
+            </TouchableOpacity>
             <View style={styles.profileMainInfo}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={[typography.h2, { fontSize: 20 }]}>
@@ -299,5 +351,18 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: 15,
     fontWeight: '700',
+  },
+  cameraIconBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: colors.primary,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
 });

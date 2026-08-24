@@ -47,9 +47,21 @@ export const setupChatSocket = (io: Server) => {
     socket.broadcast.emit('user_presence_changed', { userId, isOnline: true, lastSeen: new Date() });
     logger.info(`Socket connected: User ${userId} (Socket: ${socket.id})`);
 
-    // Join Conversation Room
-    socket.on('join_conversation', (conversationId: string) => {
-      socket.join(`conversation_${conversationId}`);
+    // Join Conversation Room (With Authorization Check)
+    socket.on('join_conversation', async (conversationId: string) => {
+      try {
+        const conv = await Conversation.findOne({
+          _id: new Types.ObjectId(conversationId),
+          participants: new Types.ObjectId(userId),
+        });
+        if (conv) {
+          socket.join(`conversation_${conversationId}`);
+        } else {
+          socket.emit('socket_error', { message: 'Unauthorized to join conversation room' });
+        }
+      } catch (err) {
+        socket.emit('socket_error', { message: 'Invalid conversation room' });
+      }
     });
 
     // Leave Conversation Room

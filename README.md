@@ -92,7 +92,7 @@ npm run dev
 
 | Account Role | Email / Username | Password | Notes |
 | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@rishta24.test` | `AdminSecure2026!` | Access to Admin Portal (metrics, verifications, bans, tickets) |
+| **Super Admin** | `admin@rishta24.test` | `AdminPass123!` | Access to Admin Portal (metrics, verifications, bans, tickets) |
 | **Demo Member** | `demo@rishta24.test` | `Password123!` | Pre-filled profile with mutual matches, incoming interests & active chat |
 | **Pre-populated Profiles** | *Aarav Sharma, Ananya Iyer, Rohan Verma, Priya Patel, etc.* | `Password123!` | Realistic Indian profiles across tech, medicine, finance & business |
 

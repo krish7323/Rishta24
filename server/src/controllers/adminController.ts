@@ -50,14 +50,43 @@ export class AdminController {
 
       const totalRevenue = payments.reduce((acc, p) => acc + p.amount, 0);
 
-      // 7-day registration trend (mock/computed)
+      // Compute real 7-day registration and revenue trend from MongoDB
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+
+      const [dailyRegistrations, dailyRevenue] = await Promise.all([
+        User.aggregate([
+          { $match: { createdAt: { $gte: sevenDaysAgo } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%b %d', date: '$createdAt' } },
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Payment.aggregate([
+          { $match: { status: 'SUCCESS', createdAt: { $gte: sevenDaysAgo } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%b %d', date: '$createdAt' } },
+              revenue: { $sum: '$amount' },
+            },
+          },
+        ]),
+      ]);
+
+      const regMap = new Map(dailyRegistrations.map((r) => [r._id, r.count]));
+      const revMap = new Map(dailyRevenue.map((r) => [r._id, r.revenue]));
+
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
+        const dateKey = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         return {
-          date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          registrations: Math.floor(12 + Math.sin(i) * 6 + i * 2),
-          revenue: Math.floor((1200 + i * 850) * 1.5),
+          date: dateKey,
+          registrations: regMap.get(dateKey) || 0,
+          revenue: revMap.get(dateKey) || 0,
         };
       });
 

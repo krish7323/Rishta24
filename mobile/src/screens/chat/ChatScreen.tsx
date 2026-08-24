@@ -21,6 +21,8 @@ import { useChatStore } from '../../store/chatStore';
 import { chatApi, generalApi } from '../../services/api';
 import { socketService } from '../../services/socket/socket';
 
+import * as ImagePicker from 'expo-image-picker';
+
 export const ChatScreen: React.FC<{ route: any; navigation: any }> = ({
   route,
   navigation,
@@ -46,13 +48,21 @@ export const ChatScreen: React.FC<{ route: any; navigation: any }> = ({
 
     // Listen for socket messages
     socketService.onMessageReceived((msg) => {
-      setMessages((prev) => [...prev, msg]);
+      setMessages((prev) => {
+        if (prev.some((m) => m._id === msg._id || (m.text === msg.text && m._id.startsWith('temp_')))) {
+          return prev.map((m) => (m._id.startsWith('temp_') && m.text === msg.text ? msg : m));
+        }
+        return [...prev, msg];
+      });
       flatListRef.current?.scrollToEnd({ animated: true });
     });
 
     socketService.onNewMessage((data) => {
       if (data.message) {
-        setMessages((prev) => [...prev, data.message]);
+        setMessages((prev) => {
+          if (prev.some((m) => m._id === data.message._id)) return prev;
+          return [...prev, data.message];
+        });
         flatListRef.current?.scrollToEnd({ animated: true });
       }
     });
@@ -78,9 +88,9 @@ export const ChatScreen: React.FC<{ route: any; navigation: any }> = ({
   }, [conversationId, partnerUserId]);
 
   const handleSend = async (text: string) => {
-    // Optimistic UI append
+    const tempId = `temp_${Date.now()}`;
     const tempMsg: any = {
-      _id: `temp_${Date.now()}`,
+      _id: tempId,
       sender: myUserId,
       receiver: partnerUserId,
       text,
@@ -94,38 +104,77 @@ export const ChatScreen: React.FC<{ route: any; navigation: any }> = ({
 
     // Emit via Socket
     socketService.sendMessage(partnerUserId, text, undefined, 'TEXT');
-
-    // Also persist via REST for resilience
-    try {
-      await chatApi.sendMessage(partnerUserId, text);
-    } catch {
-      // ignore
-    }
   };
 
-  const handleAttachPhoto = () => {
-    Alert.alert('Send Photo', 'Select a photo from gallery to send privately:', [
-      {
-        text: 'Send Demo Photo 📸',
-        onPress: async () => {
-          const demoPhoto =
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80';
-          const tempMsg: any = {
-            _id: `temp_${Date.now()}`,
-            sender: myUserId,
-            receiver: partnerUserId,
-            mediaUrl: demoPhoto,
-            messageType: 'IMAGE',
-            status: 'SENT',
-            createdAt: new Date().toISOString(),
-          };
-          setMessages((prev) => [...prev, tempMsg]);
-          socketService.sendMessage(partnerUserId, undefined, demoPhoto, 'IMAGE');
-          await chatApi.sendMessage(partnerUserId, undefined, demoPhoto);
+  const handleAttachPhoto = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please allow access to your photo gallery to send photo attachments.');
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (pickerResult.canceled || !pickerResult.assets || pickerResult.assets.length === 0) {
+        return;
+      }
+
+      const selectedAsset = pickerResult.assets[0];
+      const uri = selectedAsset.uri;
+
+      Alert.alert('Send Photo', 'Do you want to send this photo in chat?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send Photo 🚀',
+          onPress: async () => {
+            try {
+              const filename = uri.split('/').pop() || `chat_${Date.now()}.jpg`;
+              const match = /\.(\w+)$/.exec(filename);
+              const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+              const formData = new FormData();
+              if (Platform.OS === 'web') {
+                const response = await fetch(uri);
+                const blob = await response.blob();
+                formData.append('attachment', blob, filename);
+              } else {
+                formData.append('attachment', { uri, name: filename, type } as any);
+              }
+              if (conversationId) {
+                formData.append('conversationId', conversationId);
+              }
+
+              const uploadRes = await chatApi.uploadAttachment(formData);
+              const mediaUrl = uploadRes.data.mediaUrl;
+
+              const tempId = `temp_${Date.now()}`;
+              const tempMsg: any = {
+                _id: tempId,
+                sender: myUserId,
+                receiver: partnerUserId,
+                mediaUrl,
+                messageType: 'IMAGE',
+                status: 'SENT',
+                createdAt: new Date().toISOString(),
+              };
+              setMessages((prev) => [...prev, tempMsg]);
+              flatListRef.current?.scrollToEnd({ animated: true });
+
+              socketService.sendMessage(partnerUserId, undefined, mediaUrl, 'IMAGE');
+            } catch (err: any) {
+              Alert.alert('Upload Failed', 'Failed to upload chat attachment. Please try again.');
+            }
+          },
         },
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+      ]);
+    } catch (err: any) {
+      Alert.alert('Error', 'Unable to select image.');
+    }
   };
 
   const handleSafetyAction = () => {

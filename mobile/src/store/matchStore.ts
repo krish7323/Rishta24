@@ -21,6 +21,7 @@ interface MatchState {
   respondInterest: (interestId: string, action: 'ACCEPT' | 'REJECT') => Promise<void>;
   toggleShortlist: (targetUserId: string, notes?: string) => Promise<boolean>;
   setMatchCelebrationData: (data: any | null) => void;
+  reset: () => void;
 }
 
 export const useMatchStore = create<MatchState>((set, get) => ({
@@ -114,4 +115,16 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   },
 
   setMatchCelebrationData: (data) => set({ matchCelebrationData: data }),
+  reset: () =>
+    set({
+      matches: [],
+      receivedInterests: [],
+      sentInterests: [],
+      shortlists: [],
+      visitors: [],
+      isVisitorsPremiumUnlocked: false,
+      totalVisitorsCount: 0,
+      isLoading: false,
+      matchCelebrationData: null,
+    }),
 }));

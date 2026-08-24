@@ -11,7 +11,7 @@ interface SplashScreenProps {
 export const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const restoreSession = useAuthStore((state) => state.restoreSession);
   const isOnboarded = useAuthStore((state) => state.isOnboarded);
 
   const useNative = Platform.OS !== 'web';
@@ -32,19 +32,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
       }),
     ]).start();
 
+    const init = async () => {
+      const isRestored = await restoreSession();
+      setTimeout(() => {
+        if (isRestored) {
+          navigation.replace('Main');
+        } else if (isOnboarded) {
+          navigation.replace('Auth');
+        } else {
+          navigation.replace('Onboarding');
+        }
+      }, 1200);
+    };
 
-    const timer = setTimeout(() => {
-      if (isAuthenticated) {
-        navigation.replace('Main');
-      } else if (isOnboarded) {
-        navigation.replace('Auth');
-      } else {
-        navigation.replace('Onboarding');
-      }
-    }, 2200);
-
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, isOnboarded]);
+    init();
+  }, []);
 
   return (
     <View style={styles.container}>

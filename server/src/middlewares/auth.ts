@@ -23,8 +23,8 @@ export const authenticate = async (
     const token = authHeader.split(' ')[1];
     const decoded = verifyAccessToken(token);
 
-    // Verify user is still active in database
-    const user = await User.findById(decoded.userId).select('status role');
+    // Verify user is still active in database & get fresh role
+    const user = await User.findById(decoded.userId).select('status role email');
     if (!user) {
       sendError(res, 'User no longer exists', 401, 'USER_NOT_FOUND');
       return;
@@ -35,7 +35,11 @@ export const authenticate = async (
       return;
     }
 
-    req.user = decoded;
+    req.user = {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role, // Always use fresh database role
+    };
     next();
   } catch (error: any) {
     sendError(res, 'Invalid or expired session token', 401, 'TOKEN_EXPIRED');

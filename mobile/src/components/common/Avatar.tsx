@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Image, StyleSheet, ViewStyle } from 'react-native';
 import { VerifiedBadge, OnlineBadge, PremiumCrownBadge } from './Badge';
 import { colors } from '../../theme/colors';
+import { getMediaUrl } from '../../services/api/client';
 
 interface AvatarProps {
   url?: string;
@@ -23,10 +24,12 @@ export const Avatar: React.FC<AvatarProps> = ({
   const fallbackUrl =
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
 
+  const avatarUri = url ? getMediaUrl(url) : fallbackUrl;
+
   return (
     <View style={[{ width: size, height: size }, style]}>
       <Image
-        source={{ uri: url || fallbackUrl }}
+        source={{ uri: avatarUri }}
         style={[
           styles.image,
           {

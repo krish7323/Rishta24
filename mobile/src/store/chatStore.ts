@@ -12,6 +12,7 @@ interface ChatState {
   fetchMessages: (conversationId: string) => Promise<void>;
   addMessage: (message: IMessage) => void;
   setActiveConversationId: (id: string | null) => void;
+  reset: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -56,4 +57,5 @@ export const useChatStore = create<ChatState>((set) => ({
   },
 
   setActiveConversationId: (id) => set({ activeConversationId: id }),
+  reset: () => set({ conversations: [], activeMessages: [], isLoading: false, activeConversationId: null }),
 }));

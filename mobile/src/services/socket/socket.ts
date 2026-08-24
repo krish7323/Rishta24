@@ -1,13 +1,14 @@
 import { io, Socket } from 'socket.io-client';
-import { useAuthStore } from '../../store/authStore';
+import { appStorage } from '../../utils/storage';
 
-const SOCKET_URL = 'http://localhost:5000';
+const rawServerUrl = process.env.EXPO_PUBLIC_SERVER_URL || process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const SOCKET_URL = rawServerUrl.endsWith('/') ? rawServerUrl.slice(0, -1) : rawServerUrl;
 
 class SocketService {
   private socket: Socket | null = null;
 
-  connect() {
-    const token = useAuthStore.getState().accessToken;
+  async connect() {
+    const token = await appStorage.getItem('r24_access_token');
     if (!token) return;
 
     if (this.socket?.connected) return;

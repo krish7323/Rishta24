@@ -219,6 +219,7 @@ const ProfileSchema = new Schema<IProfile>(
     },
     photos: [
       {
+        _id: { type: Schema.Types.ObjectId, auto: true },
         url: String,
         isPrimary: { type: Boolean, default: false },
         privacy: { type: String, enum: ['PUBLIC', 'PROTECTED', 'PRIVATE'], default: 'PUBLIC' },

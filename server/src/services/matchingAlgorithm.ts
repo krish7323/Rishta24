@@ -58,24 +58,24 @@ export const calculateCompatibilityScore = (
 
   // 3. Location (Weight: 15%)
   let locationScore = 0;
-  if (userProfile.city.toLowerCase() === candidateProfile.city.toLowerCase()) {
+  if (userProfile.city && candidateProfile.city && userProfile.city.toLowerCase() === candidateProfile.city.toLowerCase()) {
     locationScore = 15;
     matchedCriteria.push(`Same City (${userProfile.city})`);
-  } else if (userProfile.state.toLowerCase() === candidateProfile.state.toLowerCase()) {
+  } else if (userProfile.state && candidateProfile.state && userProfile.state.toLowerCase() === candidateProfile.state.toLowerCase()) {
     locationScore = 10;
     matchedCriteria.push(`Same State (${userProfile.state})`);
-  } else if (userProfile.country.toLowerCase() === candidateProfile.country.toLowerCase()) {
+  } else if (userProfile.country && candidateProfile.country && userProfile.country.toLowerCase() === candidateProfile.country.toLowerCase()) {
     locationScore = 5;
   }
   totalScore += locationScore;
 
   // 4. Education & Career (Weight: 15%)
   let educationScore = 5;
-  if (userProfile.educationLevel === candidateProfile.educationLevel) {
+  if (userProfile.educationLevel && candidateProfile.educationLevel && userProfile.educationLevel === candidateProfile.educationLevel) {
     educationScore += 5;
     matchedCriteria.push('Similar Education Level');
   }
-  if (userProfile.occupation === candidateProfile.occupation) {
+  if (userProfile.occupation && candidateProfile.occupation && userProfile.occupation === candidateProfile.occupation) {
     educationScore += 5;
     matchedCriteria.push('Similar Professional Field');
   }
@@ -83,14 +83,14 @@ export const calculateCompatibilityScore = (
 
   // 5. Lifestyle & Diet (Weight: 15%)
   let lifestyleScore = 0;
-  if (userProfile.diet === candidateProfile.diet) {
+  if (userProfile.diet && candidateProfile.diet && userProfile.diet === candidateProfile.diet) {
     lifestyleScore += 7;
     matchedCriteria.push(`Matching Diet (${userProfile.diet.toLowerCase()})`);
   }
-  if (userProfile.smoking === candidateProfile.smoking) {
+  if (userProfile.smoking && candidateProfile.smoking && userProfile.smoking === candidateProfile.smoking) {
     lifestyleScore += 4;
   }
-  if (userProfile.drinking === candidateProfile.drinking) {
+  if (userProfile.drinking && candidateProfile.drinking && userProfile.drinking === candidateProfile.drinking) {
     lifestyleScore += 4;
   }
   totalScore += lifestyleScore;

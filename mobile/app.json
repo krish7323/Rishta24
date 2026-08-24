@@ -27,7 +27,14 @@
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Rishta24 to access your photos to upload profile photos and chat attachments.",
+          "cameraPermission": "Allow Rishta24 to use your camera to take profile photos."
+        }
+      ]
     ]
   }
 }
