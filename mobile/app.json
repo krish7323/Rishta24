@@ -20,7 +20,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#D62F5B"
       },
-      "package": "com.rishta24.app"
+      "package": "com.rishta24.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,6 +38,12 @@
           "cameraPermission": "Allow Rishta24 to use your camera to take profile photos."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b44ecde5-5fbe-43a8-bf05-20d722e08884"
+      }
+    },
+    "owner": "viz_eas_001"
   }
 }
