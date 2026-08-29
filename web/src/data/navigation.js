@@ -1,5 +1,6 @@
 export const navLinks = [
   { name: 'Home', path: '/' },
+  { name: 'App Preview', path: '/preview' },
   { name: 'Features', path: '/features' },
   { name: 'How It Works', path: '/how-it-works' },
   { name: 'User Guide', path: '/guide' },
@@ -10,6 +11,7 @@ export const navLinks = [
 export const footerLinks = {
   product: [
     { name: 'Home', path: '/' },
+    { name: 'Interactive App Preview', path: '/preview' },
     { name: 'Features', path: '/features' },
     { name: 'How It Works', path: '/how-it-works' },
     { name: 'User Guide', path: '/guide' },

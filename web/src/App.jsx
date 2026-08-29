@@ -5,6 +5,7 @@ import ScrollToTop from './components/ScrollToTop';
 import AnimatedBackground from './components/AnimatedBackground';
 
 import HomePage from './pages/HomePage';
+import PreviewPage from './pages/PreviewPage';
 import FeaturesPage from './pages/FeaturesPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import GuidePage from './pages/GuidePage';
@@ -25,6 +26,7 @@ export default function App() {
         <main className="flex-1 z-10">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/preview" element={<PreviewPage />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/guide" element={<GuidePage />} />
