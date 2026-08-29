@@ -30,18 +30,18 @@ export const setupChatSocket = (io: Server) => {
     }
   });
 
-  io.on('connection', async (socket: AuthenticatedSocket) => {
+  io.on('connection', (socket: AuthenticatedSocket) => {
     const userId = socket.userId;
     if (!userId) return;
 
     onlineUsers.set(userId, socket.id);
     socket.join(`user_${userId}`);
 
-    // Update online status in database
-    await Profile.findOneAndUpdate(
+    // Update online status in database asynchronously
+    Profile.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
       { isOnline: true, lastActiveAt: new Date() }
-    );
+    ).catch((err) => logger.error(`Error updating online status: ${err.message}`));
 
     // Broadcast user online status
     socket.broadcast.emit('user_presence_changed', { userId, isOnline: true, lastSeen: new Date() });

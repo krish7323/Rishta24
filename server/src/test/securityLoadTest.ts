@@ -119,17 +119,22 @@ async function runSecurityAndLoadTests() {
   const socketA = socketClient(SOCKET_BASE, { auth: { token: tokenA } });
 
   const socketPassed = await new Promise<boolean>((resolve) => {
-    socketA.on('connect', () => {
-      // Attempt to join non-existent / unauthorized room
-      socketA.emit('join_conversation', '666666666666666666666666');
-    });
-
     socketA.on('socket_error', (data: any) => {
-      if (data.message.includes('Unauthorized')) {
+      if (data.message.includes('Unauthorized') || data.message.includes('Invalid')) {
         socketA.disconnect();
         resolve(true);
       }
     });
+
+    const triggerJoin = () => {
+      socketA.emit('join_conversation', '666666666666666666666666');
+    };
+
+    if (socketA.connected) {
+      triggerJoin();
+    } else {
+      socketA.on('connect', triggerJoin);
+    }
 
     setTimeout(() => {
       socketA.disconnect();

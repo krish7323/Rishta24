@@ -114,6 +114,7 @@ async function runE2ETest() {
   await new Promise<void>((resolve, reject) => {
     let messageReceivedByB = false;
     let replyReceivedByA = false;
+    let started = false;
 
     socketB.on('new_message', (data: any) => {
       console.log('📩 Socket B received message from A:', data.message.text);
@@ -138,17 +139,26 @@ async function runE2ETest() {
       }
     });
 
-    socketA.on('connect', () => {
-      console.log('🔌 Socket A Connected');
-      socketA.emit('send_message', {
-        receiverId: userBId,
-        text: 'Hello Ananya! Looking forward to talking with you.',
-        messageType: 'TEXT',
-      });
-    });
+    const checkAndStart = () => {
+      if (!started && socketA.connected && socketB.connected) {
+        started = true;
+        console.log('🔌 Both Sockets Connected. Initiating real-time message exchange...');
+        socketA.emit('send_message', {
+          receiverId: userBId,
+          text: 'Hello Ananya! Looking forward to talking with you.',
+          messageType: 'TEXT',
+        });
+      }
+    };
+
+    socketA.on('connect', checkAndStart);
+    socketB.on('connect', checkAndStart);
+    checkAndStart();
 
     setTimeout(() => {
       if (!messageReceivedByB || !replyReceivedByA) {
+        socketA.disconnect();
+        socketB.disconnect();
         reject(new Error('Socket message exchange timed out'));
       }
     }, 8000);

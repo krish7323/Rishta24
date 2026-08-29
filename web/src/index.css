@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FFF9FA;
+    color: #321820;
+    font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}
+
+@layer utilities {
+  .text-gradient-rose {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-[#E84C77] to-primary-dark;
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-dark via-gold to-gold-light;
+  }
+
+  .text-gradient-dark {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-secondary via-[#611E33] to-primary;
+  }
+
+  .bg-glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bg-glass-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(240, 226, 230, 0.8);
+  }
+
+  .bg-glass-dark {
+    background: rgba(74, 21, 37, 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(214, 47, 91, 0.2);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF9FA;
+}
+::-webkit-scrollbar-thumb {
+  background: #FAD4DE;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D62F5B;
+}
